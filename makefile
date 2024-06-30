@@ -1,15 +1,42 @@
-cc = gcc -Wall
-FILES = obj/main.o obj/functions.o obj/graphics.o obj/minmax.o obj/save.o #liste des fichiers sources avec .o
-OPT = -lm -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_image
+CC = gcc
+CFLAGS = -Wall -D_REENTRANT $(shell pkg-config --cflags sdl2 SDL2_ttf SDL2_image)
+LFLAGS = $(shell pkg-config --libs sdl2 SDL2_ttf SDL2_image) -lm
+SRC_DIR = src
+OBJ_DIR = obj
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
+EXEC = JeuTraverse
 
-all: JeuTraverse #commande pour compiler et lancer le jeu
-	JeuTraverse.exe
-	
-JeuTraverse : $(FILES) #commande pour compiler le jeu
-	$(cc) $^ -o $@ $(OPT)
+# Configuration des bibliothèques et de la commande de nettoyage selon l'OS
+ifeq ($(OS),Windows_NT)
+    LIBS = -lm -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_image
+    CLEANUP = del $(subst /,\,$(OBJECTS)) $(EXEC).exe
+else
+    LIBS = $(shell pkg-config --libs --cflags sdl2 SDL2_ttf SDL2_image)
+    CLEANUP = rm -f $(OBJECTS) $(EXEC)
+endif
 
-obj/%o: src/%c #commande de création des .o avec les .c
-	$(cc) -c $^ -o $@ $(OPT) 
+# Cibles phony pour éviter des conflits de noms
+.PHONY: all clean run
 
-clean: #commande pour retirer tous les fichiers objects
-	rm obj/*.o
+# Cible principale pour la compilation
+all: $(EXEC)
+	@echo "Compilation complete!"
+
+# Cible pour exécuter l'exécutable
+run: all
+	./$(EXEC)
+	make clean
+
+# Lier les fichiers objets pour créer l'exécutable
+$(EXEC): $(OBJECTS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LFLAGS)
+
+# Compiler les fichiers source en fichiers objets
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@ $(LIBS)
+
+# Nettoyer les fichiers objets et l'exécutable
+clean:
+	$(CLEANUP)

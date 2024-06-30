@@ -12,7 +12,6 @@
 #include "../headers/save.h"
 #define FPS 150
 
-/*Fichier avec la fonction principale du programme*/
 
 //fonction principale
 int main(int argc, char *argv[]){
@@ -59,7 +58,22 @@ int main(int argc, char *argv[]){
     Forme * toDisplayMoves = &NotPoint, *tmp; //pion a afficher, variable de process
     SDL_Point mousePt, test[30]; //point là où le joueur à cliqué
 
-    SDL_Point loadPoint = {23*Height/20, 19*Height/20}, savePoint = {23*Height/20, 17*Height/20};
+    SDL_Point loadPoint = {23*Height/20, 17*Height/20};
+    SDL_Point savePoint = {23*Height/20, 19*Height/20};
+    
+    int buttonWidth = Height / 20; // Assuming the button width
+    int buttonHeight = Height / 40; // Assuming the button height
+
+    int buttonLoadXleft = loadPoint.x - buttonWidth;
+    int buttonLoadXright = loadPoint.x + buttonWidth;
+    int buttonLoadYtop = loadPoint.y - buttonHeight;
+    int buttonLoadYbottom = loadPoint.y + buttonHeight;
+
+    int buttonSaveXleft = savePoint.x - buttonWidth;
+    int buttonSaveXright = savePoint.x + buttonWidth;
+    int buttonSaveYtop = savePoint.y - buttonHeight;
+    int buttonSaveYbottom = savePoint.y + buttonHeight;
+
     char loadPath[50] = "0";
 
     //boucle principale
@@ -135,20 +149,30 @@ int main(int argc, char *argv[]){
                             }
                         }
                     }
-                    
+
+
+
                     //bouton de load
-                    if (event.button.x > Height && event.button.x < 11*Height/10 && event.button.y > 9*Height/10 && event.button.y < Height){
+                    if (event.button.x >= buttonLoadXleft && event.button.x <= buttonLoadXright &&
+                        event.button.y >= buttonLoadYtop && event.button.y <= buttonLoadYbottom) {
                         SDL_MinimizeWindow(window);
                         goto loadWindow;
                         returnLoad:
-                        ;
+                        
+
                         if (loadPath[0] != '0'){
                             Load(loadPath, PlayersList, &PlayerCount, &playerTurn, hasLost, &turnCount);
                         }
+                        //come back to the main window
                         SDL_RestoreWindow(window);
+                        SDL_ShowWindow(window);
+                        SDL_RaiseWindow(window);
+
                     }
                     //bouton de save
-                    if (event.button.x > Height && event.button.x < 11*Height/10 && event.button.y > 8*Height/10 && event.button.y < 9*Height/10){
+                    if (event.button.x >= buttonSaveXleft && event.button.x <= buttonSaveXright &&
+                        event.button.y >= buttonSaveYtop && event.button.y <= buttonSaveYbottom) {
+                        //printf("Save button clicked\n"); // Debug print for save button click
                         Save(PlayersList, PlayerCount, playerTurn, hasLost, turnCount);
                     }
                 }
@@ -201,8 +225,8 @@ int main(int argc, char *argv[]){
         fadeText(turnCountLabel, renderer, turnCountPoint, 100, 15);
         fadeText(playerTurnLabel, renderer, playerTurnPoint, 100, 15);
 
-        createButton("Save", renderer, loadPoint);
-        createButton("Load", renderer, savePoint);
+        createButton("Load", renderer, loadPoint);
+        createButton("Save", renderer, savePoint);
 
         SDL_RenderPresent(renderer);
 
@@ -233,6 +257,7 @@ int main(int argc, char *argv[]){
     ;
 
     //création d'une liste des sauvegardes dans le dossier saves
+    //création d'une liste des sauvegardes dans le dossier saves
     DIR * rep = opendir ("./saves");
     int n = 0, ind = 0;
     char listPath[100][100];
@@ -245,74 +270,96 @@ int main(int argc, char *argv[]){
             strcpy(listPath[ind++], ent->d_name);
         }
     }
+    closedir(rep);
+    //Afficher la liste des sauvegardes
+    printf("Liste des sauvegardes:\n");
+    for (int i = 0; i < n; i++){
+        printf("%d->%s\n", i+1, listPath[i]);
+    }
 
-
-    closedir (rep);
     int done = 1, Canclick = 0;
-    SDL_Window *SubWindow = SDL_CreateWindow("Partie à charger", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              400, 500, SDL_WINDOW_SHOWN);
-    //création du renderer
-    SDL_Renderer * loadRenderer = SDL_CreateRenderer(SubWindow, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Window *SubWindow = SDL_CreateWindow("Partie à charger", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,400, 500, SDL_WINDOW_SHOWN);
+    if (!SubWindow) {
+        SDL_Log("Erreur de création de la fenêtre : %s", SDL_GetError());
+        SDL_Quit();
+        return -1;
+    }
+
+    SDL_Renderer *loadRenderer = SDL_CreateRenderer(SubWindow, -1, SDL_RENDERER_ACCELERATED);
+    if (!loadRenderer) {
+        SDL_Log("Erreur de création du renderer : %s", SDL_GetError());
+        SDL_DestroyWindow(SubWindow);
+        SDL_Quit();
+        return -1;
+    }
+
     SDL_SetRenderDrawBlendMode(loadRenderer, SDL_BLENDMODE_BLEND);
     SDL_RaiseWindow(SubWindow);
     SDL_Point Subcenter = {200, 100}, pointInput = {160, 450}, pointEntry = {315, 450}, pointValider = {315, 475};
     SDL_Event eventInput;
     char input[10];
-
     SDL_StartTextInput();
-    while (done){
-        SDL_PollEvent(&eventInput);
-        if (eventInput.type == SDL_WINDOWEVENT && eventInput.window.event == SDL_WINDOWEVENT_CLOSE) done = 0;
-        else if (eventInput.type == SDL_TEXTINPUT || eventInput.type == SDL_KEYUP){
-            if (eventInput.type == SDL_KEYUP && eventInput.key.keysym.sym == SDLK_BACKSPACE && strlen(input) > 0){
-                
-                if (strlen(input) == 1) input[0] = '\0';
-                else input[strlen(input)-1] = '\0';
-            }
-            else if (eventInput.type == SDL_TEXTINPUT){
-                sprintf(input, "%s%s", input, eventInput.text.text);
-            }
-        }
-        if (eventInput.type == SDL_MOUSEBUTTONDOWN) Canclick = 1;
-        else if (eventInput.type == SDL_MOUSEBUTTONUP){
-            if (Canclick == 1) {
-                int x = eventInput.button.x;
-                int y = eventInput.button.y;
-                if (x > pointValider.x -40 && x < pointValider.x +40 && y > pointValider.y -20 && y < pointValider.y +20){
-                    if (strcmp(input, "") && atoi(input)-1 < n){
-                        Load(listPath[atoi(input)-1], PlayersList, &PlayerCount, &playerTurn, hasLost, &turnCount);
-                        //actualisation affichage
-                        sprintf(turnCountLabel, "Tour %d", turnCount);
-                        sprintf(playerTurnLabel, "Au tour du joueur %d", playerTurn+1);
-                        done = 0;
+
+    // Main event loop
+    while (done) {
+        while (SDL_PollEvent(&eventInput)) {
+            if (eventInput.type == SDL_WINDOWEVENT && eventInput.window.event == SDL_WINDOWEVENT_CLOSE) {
+                done = 0;
+            } else {
+                if (eventInput.type == SDL_KEYUP && eventInput.key.keysym.sym == SDLK_BACKSPACE && strlen(input) > 0) {
+                    input[strlen(input) - 1] = '\0';
+                } else if (eventInput.type == SDL_TEXTINPUT) {
+                    char temp[256];
+                    if (strlen(input) + strlen(eventInput.text.text) < sizeof(temp)) {
+                        snprintf(temp, sizeof(temp), "%s%s", input, eventInput.text.text);
+                        strncpy(input, temp, sizeof(input));
+                        input[sizeof(input) - 1] = '\0';
                     }
                 }
+
+                if (eventInput.type == SDL_MOUSEBUTTONDOWN) {
+                    Canclick = 1;
+                } else if (eventInput.type == SDL_MOUSEBUTTONUP) {
+                    if (Canclick) {
+                        int x = eventInput.button.x;
+                        int y = eventInput.button.y;
+                        if (x > pointValider.x - 40 && x < pointValider.x + 40 && y > pointValider.y - 20 && y < pointValider.y + 20) {
+                            int index = atoi(input) - 1;
+                            if (index >= 0 && index < n) {
+                                Load(listPath[index], PlayersList, &PlayerCount, &playerTurn, hasLost, &turnCount);
+                                // actualisation affichage
+                                sprintf(turnCountLabel, "Tour %d", turnCount);
+                                sprintf(playerTurnLabel, "Au tour du joueur %d", playerTurn + 1);
+                                done = 0;
+                            }
+                        }
+                    }
+                    Canclick = 0;
+                }
             }
-            Canclick = 0;
         }
-               
 
         SDL_SetRenderDrawColor(loadRenderer, 50, 50, 50, 255);
-        SDL_RenderFillRect(loadRenderer, NULL);
+        SDL_RenderClear(loadRenderer);
 
+        // Render text and buttons
+        fadeText("Liste des parties sauvegardes:", loadRenderer, Subcenter, 100, 20);
         char text[500];
-        sprintf(text, "Liste des parties sauvegardes:");
-        fadeText(text, loadRenderer, Subcenter, 100, 20);
-        for (int i = 0; i < n; i++){
-            sprintf(text, "%d->%s", i+1, listPath[i]);
-            SDL_Point point = {Subcenter.x, Subcenter.y + 25 * (i+1)};
+        for (int i = 0; i < n; i++) {
+            sprintf(text, "%d->%s", i + 1, listPath[i]);
+            SDL_Point point = {Subcenter.x, Subcenter.y + 25 * (i + 1)};
             fadeText(text, loadRenderer, point, 100, 18);
         }
-
         fadeText("Entrer un numero de sauvegarde :", loadRenderer, pointInput, 100, 18);
-        char tmp[10];
-        sprintf(tmp, " %s", input);
-        fadeText(tmp, loadRenderer, pointEntry, 100, 18);
+        sprintf(text, " %s", input);
+        fadeText(text, loadRenderer, pointEntry, 100, 18);
         createButton("Valider", loadRenderer, pointValider);
+
         SDL_RenderPresent(loadRenderer);
-        SDL_Delay(100);
+        SDL_Delay(16); // Approximate 60 FPS
     }
     SDL_StopTextInput();
+
     SDL_DestroyRenderer(loadRenderer);
     SDL_DestroyWindow(SubWindow);
 
@@ -326,3 +373,4 @@ int main(int argc, char *argv[]){
     SDL_Quit();
     return 0;
 }
+
