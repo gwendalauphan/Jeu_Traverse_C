@@ -64,7 +64,6 @@ int minimax(Player * playerList, int hasLost[4], int playerCount, int turnCount,
         for (int i = 0; i < 8; i++){
             oldPos = playerList[iaTurn].piece[i].position;
             validMove(playerList[iaTurn].piece[i], playerList, playerCount, currentPlayer, playerList[iaTurn].piece[i].position, test, &len, 0);
-            
             for (int j = 0; j < len; j++){
                 playerList[iaTurn].piece[i].position = test[j];
                 score = minimax(playerList, hasLost, playerCount, turnCount, nextPlayer, alpha, beta, depth + 1, iaTurn);
@@ -111,14 +110,30 @@ void BestMove(Player * playerList, int hasLost[4], int playerCount, int turnCoun
     for (int i = 0; i < 8; i++){
         oldPos = playerList[iaTurn].piece[i].position; //mémorisation de l'ancienne posiition
         validMove(playerList[iaTurn].piece[i], playerList, playerCount, iaTurn, playerList[iaTurn].piece[i].position, test, &len, 0); //calcul des déplacements possibles
-        
         if (len != 0) stuck = 0;
 
         for (int j = 0; j < len; j++){ //boucle dans chaque déplacement possible
+            if (iaTurn < 0 || iaTurn >= playerCount) {
+                printf("Erreur: iaTurn (%d) hors limites [0, %d).\n", iaTurn, playerCount);
+
+            } else if (i < 0 || i >= 8) {
+                printf("Erreur: i (%d) hors limites [0, 8).\n", i);
+            } else if (bestPiece < 0 || bestPiece >= 8) {
+                printf("Erreur: bestPiece (%d) hors limites [0, 8).\n", bestPiece);
+            } else {
+                int index = 10 * test[j].y + test[j].x;
+                if (index < 0 || index >= 100) {
+                    printf("Erreur: Index calculé (%d) hors limites [0, 100).\n", index);
+                } else {
+                    //do nothing
+                }
+            }
+
+            
             playerList[iaTurn].piece[i].position = test[j]; //changement de la position
-            playerList[iaTurn].piece[bestPiece].history[10 * test[j].y + test[j].x] ++; //et de l'historique
+            playerList[iaTurn].piece[bestPiece].history[10 * test[j].y + test[j].x]++; //et de l'historique
             score = minimax(playerList, hasLost, playerCount, turnCount, nextPlayer, alpha, beta, 0, iaTurn); //envois dans la fonction récursive de l'algorithme
-            playerList[iaTurn].piece[bestPiece].history[10 * test[j].y + test[j].x] --; //réstauration à l'état par défaut
+            playerList[iaTurn].piece[bestPiece].history[10 * test[j].y + test[j].x]--; //réstauration à l'état par défaut
             playerList[iaTurn].piece[i].position = oldPos;
             if (score > BestScore){ //si on a un meilleur score, on mémorise la position et le pion
                 BestScore = score;

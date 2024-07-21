@@ -28,6 +28,8 @@ int main(int argc, char *argv[]){
     PlayerCount += BotCount; //incrémentation du nombre de bot au total de joueurs 
     reset(PlayerCount, PlayersList); //initialisation des joueurs
     
+    
+
     //initialisation de la fenetre et de la police
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -81,6 +83,7 @@ int main(int argc, char *argv[]){
 
         //tour d'un bot si l'id est -1
         if (hasLost[playerTurn] == -1){
+            
             BestMove(PlayersList, hasLost, PlayerCount, turnCount, playerTurn); //fonction qui joue le meilleur coup
             result = Winner(PlayersList, PlayerCount, playerTurn, turnCount); //vérification de l'état du bot
             //au tour de la prochaine personne qui n'as pas perdus
