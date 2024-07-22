@@ -186,7 +186,8 @@ int main(int argc, char *argv[]){
             if (result == 0) strcpy(textToDisplay,"Il y a egalite"); //si il y a égalité, affichage du message
             else if (result <= PlayerCount) sprintf(textToDisplay, "Le joueur %d a gagne", result); //si le jouueur à gagné, affichage du message
             else {
-                sprintf(textToDisplay, "Le joueur %d a perdus", result - PlayerCount);
+                
+                sprintf(textToDisplay, "Le joueur %d a perdu", result - PlayerCount);
                 hasLost[result - PlayerCount - 1] = 1; //si un joueur a perdus, son état est changé dans la liste
             }
             int sum = 0; //somme pour voir combien de personnes restent en jeu
