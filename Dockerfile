@@ -3,11 +3,12 @@ FROM ubuntu:latest
 
 # Mettre à jour les paquets et installer les dépendances nécessaires
 RUN apt-get update && apt-get install -y \
+    zip \
     gcc \
     make \
     libsdl2-dev \
     libsdl2-image-dev \
-    libsdl2-ttf-dev 
+    libsdl2-ttf-dev
 
 # Définir une variable d'environnement pour XDG_RUNTIME_DIR
 ENV XDG_RUNTIME_DIR=/tmp/runtime-root

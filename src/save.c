@@ -14,9 +14,10 @@
 #endif
 /*Fichier contenant les fonctions pour sauvegarder / charger uine partie*/
 
-void Save(Player * playerList, int playerCount, int playerTurn, int hasLost[4], int turnCount) {
+char* Save(Player * playerList, int playerCount, int playerTurn, int hasLost[4], int turnCount) {
     char command[256];
     char path[50];
+    char *info_message = malloc(100);
     
     char cwd[1024];  // Buffer pour le chemin actuel
 
@@ -25,7 +26,8 @@ void Save(Player * playerList, int playerCount, int playerTurn, int hasLost[4], 
         printf("Current working dir: %s\n", cwd);
     } else {
         perror("getcwd() error");
-        return;  // Gérer l'erreur si nécessaire
+        strcpy(info_message, "Impossible de retrouver le répertoire de travail actuel \n La partie n'a pas été sauvegardée");
+        return info_message;
     }
 
     time_t currentTime;
@@ -44,7 +46,8 @@ void Save(Player * playerList, int playerCount, int playerTurn, int hasLost[4], 
     FILE* file = fopen("saves/tmp/main", "w");
     if (file == NULL) {
         perror("Failed to open file for writing");
-        return;
+        strcpy(info_message, "Impossible d'ouvrir le fichier pour l'écriture \n La partie n'a pas été sauvegardée");
+        return info_message;
     }
     fprintf(file, "%d\n%d\n%d\n%d %d %d %d", playerCount, playerTurn, turnCount, hasLost[0], hasLost[1], hasLost[2], hasLost[3]);
     fclose(file);
@@ -84,6 +87,11 @@ void Save(Player * playerList, int playerCount, int playerTurn, int hasLost[4], 
     // Unix command to remove the temporary directory
     system("rm -rf saves/tmp");
     #endif
+
+    strcpy(info_message, "Partie sauvegardée dans /saves/date_");
+    sprintf(info_message + strlen(info_message), "%d-%02d-%02d_%02d_%02d_%02d_nbJoueurs_%d.zip", timeComp->tm_year + 1900, timeComp->tm_mon + 1, timeComp->tm_mday, timeComp->tm_hour, timeComp->tm_min, timeComp->tm_sec, playerCount);
+    
+    return info_message;
 }
 
 void Load(char *path, Player *playerList, int *playerCount, int *playerTurn, int hasLost[4], int *turnCount) {

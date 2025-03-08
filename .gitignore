@@ -1,4 +1,5 @@
-saves/
 !saves/Fin_de_jeu.zip
 !saves/Perdus.zip
+saves/*
+!saves/.gitkeep
 JeuTraverse

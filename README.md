@@ -39,7 +39,7 @@ make all
 
 ## Utilisation
 
-Lancez le jeu avec l'exécutable généré (`./2048` sous Linux ou double-cliquez sur `2048.exe` sous Windows). Au lancement, sélectionnez le mode de jeu désiré.
+Lancez le jeu avec l'exécutable généré (`./JeuTraverse` sous Linux ou double-cliquez sur `JeuTraverse.exe` sous Windows). Au lancement, sélectionnez le mode de jeu désiré.
 
 
 
@@ -66,16 +66,18 @@ xhost +local:docker
 
 Lancer le conteneur :
 ```bash
-docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --device /dev/dri:/dev/dri jeutraverse
+docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v saves:/usr/src/traverse/saves --device /dev/dri:/dev/dri jeutraverse
 ```
+Ou en utilisant docker-compose :
+```bash
 
 Révoquer l'accès X11 après utilisation :
 ```bash
 xhost -local:docker
-``` 
+```
 
 ## Utiliser l'application
-Pour lancer l'application, il suffit de lancer JeuTraverse.exe. Une fenêtre de dialogue apparait nous énonçant les règles du jeu.
+Au lancement du jeu, une fenêtre de dialogue apparait nous énonçant les règles du jeu.
 Ensuite une autre fenêtre se lance demandant combien de personne (humain) vont jouer.
 Enfin une dernière fenêtre demande le nombre de bots (ordinateurs) qui vont jouer.
 Une fois les informations remplies, la fenêtre principale se lance et il suffit de cliquer avec la souris pour interagir avec le jeu.

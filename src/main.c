@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
     for (int i = PlayerCount; i< PlayerCount+BotCount; i ++){
         hasLost[i] = -1; //pour chaque bot, on l'joute dans la liste
     }
-    PlayerCount += BotCount; //incrémentation du nombre de bot au total de joueurs 
+    PlayerCount += BotCount; //incrémentation du nombre de bot au total de joueurs
     reset(PlayerCount, PlayersList); //initialisation des joueurs
     
     
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]){
         //récupération des évènements
         SDL_PollEvent(&event);
         if (event.type == SDL_QUIT) continuer = 0; //si il faut quitter, on casse la boucle
-        if (result == -1) switch(event.type) { //si la partie n'est pas finie 
+        if (result == -1) switch(event.type) { //si la partie n'est pas finie
             case SDL_MOUSEBUTTONDOWN:
                 canclick = 1;
                 break;
@@ -176,7 +176,11 @@ int main(int argc, char *argv[]){
                     if (event.button.x >= buttonSaveXleft && event.button.x <= buttonSaveXright &&
                         event.button.y >= buttonSaveYtop && event.button.y <= buttonSaveYbottom) {
                         //printf("Save button clicked\n"); // Debug print for save button click
-                        Save(PlayersList, PlayerCount, playerTurn, hasLost, turnCount);
+                        char *return_save_message = Save(PlayersList, PlayerCount, playerTurn, hasLost, turnCount);
+                        printf("%s\n", return_save_message); // Debug print for save message
+                        //display the message on the screen
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Save", return_save_message, window);
+                        
                     }
                 }
                 canclick = 0;
@@ -252,7 +256,7 @@ int main(int argc, char *argv[]){
             sprintf(fps_label, "Fps: %d", compteur);
             start = now;
             compteur = 0;
-        }      
+        }
 
     }
 
@@ -260,7 +264,6 @@ int main(int argc, char *argv[]){
     loadWindow:
     ;
 
-    //création d'une liste des sauvegardes dans le dossier saves
     //création d'une liste des sauvegardes dans le dossier saves
     DIR * rep = opendir ("./saves");
     int n = 0, ind = 0;
