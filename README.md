@@ -29,7 +29,7 @@ Le jeu se termine lorsque :
   il a alors perdu la partie.
 - Un pion retourne à une même position 3 fois, la partie est déclarée nulle.
 
-----
+---
 
 # Pour lancer le jeu
 
