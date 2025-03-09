@@ -3,4 +3,4 @@
 saves/*
 !saves/.gitkeep
 JeuTraverse
-obj/
+obj
